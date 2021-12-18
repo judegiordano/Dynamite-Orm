@@ -1,0 +1,11 @@
+{
+	"recommendations": [
+		"eamodio.gitlens",
+		"pkief.material-icon-theme",
+		"coenraads.bracket-pair-colorizer-2",
+		"redhat.vscode-yaml",
+		"oouo-diogo-perdigao.docthis",
+		"editorconfig.editorconfig",
+		"ms-azuretools.vscode-docker"
+	]
+}
