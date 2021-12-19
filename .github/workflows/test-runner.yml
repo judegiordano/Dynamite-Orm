@@ -8,30 +8,24 @@ on:
     branches: [dev]
 
 jobs:
-
-  docker-compose-up:
-    name: Run DynamoDb Local
+  build-test-enironment:
+    name: Build Test Environment
     runs-on: ubuntu-latest
+    environment: Development
     env:
       COMPOSE_FILE: docker-compose.yml
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
       DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Login to DockerHub
-      run: docker login -u $DOCKER_USER -p $DOCKER_PASS
-
-    - name: Build docker images
-      run: docker-compose -f "docker-compose.yml" up -d --build
-
-  build:
-    runs-on: ubuntu-latest
-    environment: Development
-    steps:
+      - name: Checkout code
       - uses: actions/checkout@v2
+
+      - name: Login to DockerHub
+        run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+      - name: Compose Docker Container
+        run: docker-compose -f "docker-compose.yml" up -d --build
 
       - name: Use Node.js
         uses: actions/setup-node@v2
@@ -51,20 +45,5 @@ jobs:
       - name: Run Tests
         run: yarn test
 
-  docker-compose-down:
-    name: Tear Down DynamoDb Local
-    runs-on: ubuntu-latest
-    env:
-      COMPOSE_FILE: docker-compose.yml
-      DOCKER_USER: ${{ secrets.DOCKER_USER }}
-      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Login to DockerHub
-      run: docker login -u $DOCKER_USER -p $DOCKER_PASS
-
-    - name: Compose down docker container
-      run: docker-compose -f "docker-compose.yml" down
+      - name: Compose Down Docker Container
+        run: docker-compose -f "docker-compose.yml" down
