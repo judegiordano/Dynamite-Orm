@@ -1,7 +1,7 @@
 {
-	"name": "dynamite-sdk",
-	"version": "1.0.0",
-	"description": "a ts sdk for dynamodb",
+	"name": "dynamite-orm",
+	"version": "1.0.1",
+	"description": "a ts orm for dynamodb",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
 	"engines": {
