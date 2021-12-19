@@ -1,6 +1,10 @@
-describe("generic test runner", () => {
+import { assert } from 'chai'
 
-	it("should run generic test", async () => {
-		expect(1 + 1).toBe(2);
+before(async () => {
+	describe("wip", () => {
+		it("should run generic test", async () => {
+			const value = 1 + 1
+			assert.equal(value, 2)
+		});
 	});
-});
+})
