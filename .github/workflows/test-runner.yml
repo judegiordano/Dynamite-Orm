@@ -3,9 +3,9 @@ name: Test Runner
 on:
   workflow_dispatch:
   push:
-    branches: [dev]
+    branches: [*]
   pull_request:
-    branches: [dev]
+    branches: [*]
 
 jobs:
   build-test-enironment:
