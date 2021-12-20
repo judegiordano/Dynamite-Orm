@@ -23,7 +23,7 @@ jobs:
 
       - name: Login to DockerHub
         run: |
-          docker lougout
+          docker logout
           echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
 
       - name: Compose Docker Container
@@ -51,4 +51,4 @@ jobs:
         run: docker-compose -f "docker-compose.yml" down
 
       - name: Docker Logout
-        run: docker lougout
+        run: docker logout
