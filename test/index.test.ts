@@ -1,10 +1,18 @@
-import { assert } from 'chai'
+/* eslint-disable no-undef */
+import { assert } from "chai";
+import { Seed, Drop } from "./__mocks__";
 
 before(async () => {
-	describe("wip", () => {
-		it("should run generic test", async () => {
-			const value = 1 + 1
-			assert.equal(value, 2)
-		});
+	await Seed();
+});
+
+after(async () => {
+	await Drop();
+});
+
+describe("dynamo read", () => {
+	it("should run generic test", async () => {
+		const value = 1 + 1;
+		assert.equal(value, 2);
 	});
-})
+});

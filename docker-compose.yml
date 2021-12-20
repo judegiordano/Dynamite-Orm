@@ -12,7 +12,7 @@ services:
       - "8001:8001"
     environment:
       DYNAMO_ENDPOINT: "http://dynamodb-local:8000"
-      AWS_REGION: "lcoal-region"
+      AWS_REGION: "local-region"
       AWS_ACCESS_KEY_ID: test-key
       AWS_SECRET_ACCESS_KEY: test-secret
     depends_on:

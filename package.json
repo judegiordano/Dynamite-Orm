@@ -22,7 +22,6 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@aws-sdk/client-dynamodb": "^3.44.0",
-		"@shelf/jest-dynamodb": "^2.1.0",
 		"@types/chai": "^4.3.0",
 		"@types/jest": "^27.0.3",
 		"@types/mocha": "^9.0.0",
@@ -40,7 +39,6 @@
 	},
 	"dependencies": {
 		"aws-sdk": "^2.1046.0",
-		"aws-sdk-mock": "^5.5.0",
 		"class-transformer": "^0.5.1",
 		"uuid": "^8.3.2"
 	}
