@@ -47,7 +47,7 @@ export async function Seed() {
 			WriteCapacityUnits: 1
 		}
 	}).promise();
-	console.log("tables created:", TableDescription?.TableName);
+	console.log("tables created:", [TableDescription?.TableName]);
 }
 
 export async function Drop() {
