@@ -1,0 +1,49 @@
+name: Test Runner
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [*]
+  pull_request:
+    branches: [*]
+
+jobs:
+  build-test-enironment:
+    name: Build Test Environment
+    runs-on: ubuntu-latest
+    environment: Development
+    env:
+      COMPOSE_FILE: docker-compose.yml
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to DockerHub
+        run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+      - name: Compose Docker Container
+        run: docker-compose -f "docker-compose.yml" up -d --build
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          cache: yarn
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint Project
+        run: yarn lint
+
+      - name: Build Project
+        run: yarn build
+
+      - name: Run Tests
+        run: yarn test
+
+      - name: Compose Down Docker Container
+        run: docker-compose -f "docker-compose.yml" down

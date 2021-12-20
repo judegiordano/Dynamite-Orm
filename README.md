@@ -1,18 +1,19 @@
-# Dynamite-Sdk
+# Dynamite-Orm 🧨
+[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](./LICENSE)
 
 ```ts
 // link locally
 yarn link
 // use locally
-yarn link "dynamite-sdk"
+yarn link "dynamite-orm"
 // remove locally
-yarn unlink "dynamite-sdk"
+yarn unlink "dynamite-orm"
 ```
 ---
 ## Usage
 ```ts
 // UserModel.ts
-import { BaseModel, IModelBase } from "dynamite-sdk";
+import { BaseModel, IModelBase } from "dynamite-orm";
 
 export interface IUser extends IModelBase {
 	username: string;
@@ -35,7 +36,7 @@ export class UserModel extends BaseModel implements IUser {
 
 ```ts
 // UserEntity.ts
-import { Entity } from "dynamite-sdk";
+import { Entity } from "dynamite-orm";
 
 import { IUser } from "./UserModel.ts";
 

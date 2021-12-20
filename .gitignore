@@ -35,4 +35,4 @@ bower_components
 Thumbs.db
 
 lib/**
-dynamite-sdk-*.tgz
+dynamite-orm-*.tgz
