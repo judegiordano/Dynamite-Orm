@@ -1,4 +1,4 @@
-import { DynamoDB } from "aws-sdk";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 import {
 	IModel,
@@ -7,7 +7,8 @@ import {
 	UpdateAttributes,
 	FilterResult,
 	DeleteItemOutput,
-	UpdateReturnValues
+	UpdateReturnValues,
+	PutItemOutput
 } from "../Types";
 import { uuid, mapExpression, reduceKeyNames, reduceKeyValues } from "../Helpers";
 
@@ -20,7 +21,7 @@ import { uuid, mapExpression, reduceKeyNames, reduceKeyValues } from "../Helpers
  * @template IndexOptions
  * @template T
  */
-export abstract class Entity<IndexOptions extends string, T extends IModel> extends DynamoDB.DocumentClient {
+export abstract class Entity<IndexOptions extends string, T extends IModel> extends DocumentClient {
 
 	/**
 	 *
@@ -35,8 +36,8 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 * @param {string} tableName
 	 * @memberof Entity
 	 */
-	constructor(tableName: string) {
-		super();
+	constructor(tableName: string, endpoint?: string) {
+		super({ endpoint });
 		this.TableName = tableName;
 	}
 
@@ -86,7 +87,7 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 			TableName: this.TableName,
 			IndexName,
 			KeyConditionExpression: mapExpression(conditionKeys),
-			FilterExpression: mapExpression(filterKeys),
+			FilterExpression: mapExpression(filterKeys) || "attribute_exists(id)",
 			ExpressionAttributeNames,
 			ExpressionAttributeValues,
 			ScanIndexForward: options?.order === "ASC",
@@ -163,8 +164,8 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 * @return {*}  {Promise<PutItemOutput>}
 	 * @memberof Entity
 	 */
-	public async PutItem(document: Partial<T>): Promise<T> {
-		const { Attributes } = await super.put({
+	public async PutItem(document: Partial<T>): Promise<PutItemOutput> {
+		return super.put({
 			TableName: this.TableName,
 			Item: {
 				id: uuid(),
@@ -174,7 +175,6 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 				...document
 			}
 		}).promise();
-		return Attributes as T;
 	}
 
 	/**
