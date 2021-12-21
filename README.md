@@ -77,7 +77,9 @@ import { UserModel } from "./UserModel";
 import { User } from "./UserEntity";
 
 (async () => {
-	const item = await User.FindById("98c79a5a-dbc4-4711-9ade-d6c2d6623f33");
+	const item = await User.FilterByPrimaryKey({
+		id: "98c79a5a-dbc4-4711-9ade-d6c2d6623f33"
+	});
 	console.log(item);
 })()
 ```
@@ -185,7 +187,9 @@ import { User } from "./UserEntity";
 import { User } from "./UserEntity";
 
 (async () => {
-	const { Attributes } = await User.UpdateById("98c79a5a-dbc4-4711-9ade-d6c2d6623f33", {
+	const { Attributes } = await User.UpdateByPrimaryKey({
+		id: "98c79a5a-dbc4-4711-9ade-d6c2d6623f33"
+	}, {
 		age: 19,
 		username: "BarBas"
 	}, "UPDATED_NEW");
