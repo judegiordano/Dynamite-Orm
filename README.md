@@ -1,14 +1,6 @@
 # Dynamite-Orm 🧨
 [![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](./LICENSE)
 
-```ts
-// link locally
-yarn link
-// use locally
-yarn link "dynamite-orm"
-// remove locally
-yarn unlink "dynamite-orm"
-```
 ---
 ## Usage
 ```ts
