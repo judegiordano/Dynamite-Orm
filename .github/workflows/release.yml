@@ -20,6 +20,9 @@ jobs:
 
       - run: yarn lint
 
+      - run: yarn build
+
       - run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_ACCESS_TOKEN }}" > .npmrc
+          npm pack
           npm publish

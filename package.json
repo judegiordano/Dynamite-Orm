@@ -1,6 +1,6 @@
 {
 	"name": "dynamite-orm",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"description": "a ts orm for dynamodb",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
