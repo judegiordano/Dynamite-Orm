@@ -34,6 +34,7 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	/**
 	 * Creates an instance of Entity.
 	 * @param {string} tableName
+	 * @param {string} [endpoint]
 	 * @memberof Entity
 	 */
 	constructor(tableName: string, endpoint?: string) {
@@ -44,44 +45,37 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 
 	/**
 	 *
-	 * @param {Partial<T>} keyExpression
+	 * @param {Partial<T>} Key
 	 * @return {*}  {Promise<T>}
 	 * @memberof Entity
+	 * ---
+	 * find one document by primary key
+	 *
+	 * if both sort and range keys are defined, both are required
 	 */
-	public async FilterByPrimaryKey(
-		keyExpression: Partial<T>,
+	public async FindOne(
+		Key: Partial<T>,
 	): Promise<T> {
-		const conditionKeys = Object.keys(keyExpression);
-		const ExpressionAttributeNames = {
-			...reduceKeyNames(conditionKeys)
-		};
-		const ExpressionAttributeValues = {
-			...reduceKeyValues(keyExpression, conditionKeys)
-		};
-		const { Items } = await super.query({
-			TableName: this.TableName,
-			KeyConditionExpression: mapExpression(conditionKeys),
-			ExpressionAttributeNames,
-			ExpressionAttributeValues,
-			Limit: 1
-		}).promise();
-		if (!Items) throw new Error("no item found");
-		return Items[0] as T;
+		const { Item } = await super.get({ TableName: this.TableName, Key }).promise();
+		return Item as T;
 	}
 
 	/**
 	 *
 	 * @param {IndexOptions} IndexName
-	 * @param {Partial<T>} keyConditionExpression
+	 * @param {Partial<T>} keyExpression
+	 * @param {Partial<T>} [filterExpression={}]
 	 * @param {({ order?: "ASC" | "DESC", limit?: number })} [options]
 	 * @return {*}  {Promise<FilterResult<T>>}
 	 * @memberof Entity
+	 * ---
+	 * filter by a given Global Secondary Index
 	 */
-	public async FilterByGsi(
+	public async Find(
 		IndexName: IndexOptions,
 		keyExpression: Partial<T>,
 		filterExpression: Partial<T> = {},
-		options?: { order?: "ASC" | "DESC", limit?: number }
+		options?: { order?: "ASC" | "DESC", limit?: number, offsetKey?: Partial<T> }
 	): Promise<FilterResult<T>> {
 		const conditionKeys = Object.keys(keyExpression);
 		const filterKeys = Object.keys(filterExpression);
@@ -93,20 +87,21 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 			...reduceKeyValues(keyExpression, conditionKeys),
 			...reduceKeyValues(filterExpression, filterKeys)
 		};
-		const { Items, Count } = await super.query({
+		const { Items, Count, LastEvaluatedKey } = await super.query({
 			TableName: this.TableName,
 			IndexName,
 			KeyConditionExpression: mapExpression(conditionKeys),
 			FilterExpression: mapExpression(filterKeys) || "attribute_exists(id)",
 			ExpressionAttributeNames,
 			ExpressionAttributeValues,
+			ExclusiveStartKey: options?.offsetKey,
 			ScanIndexForward: options?.order === "ASC",
 			Limit: options?.limit
 		}).promise();
-		if (!Items || !Count || Count == 0) throw new Error("no items found");
 		return {
-			Items: Items as T[],
-			Count
+			Items: Items as T[] ?? [],
+			Count: Count ?? 0,
+			LastEvaluatedKey: LastEvaluatedKey as Partial<T>
 		};
 	}
 
@@ -117,8 +112,10 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 * @param {UpdateReturnValues} [ReturnValues="UPDATED_NEW"]
 	 * @return {*}  {Promise<UpdateAttributes<T>>}
 	 * @memberof Entity
+	 * ---
+	 * update one document by primary key
 	 */
-	public async UpdateByPrimaryKey(
+	public async UpdateOne(
 		Key: Partial<T>,
 		updateExpression: Partial<T>,
 		ReturnValues: UpdateReturnValues = "UPDATED_NEW"
@@ -148,8 +145,10 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 * @param {Partial<T>[]} document
 	 * @return {*}  {Promise<BatchWriteOutput>}
 	 * @memberof Entity
+	 * ---
+	 * insert up to 25 documents
 	 */
-	public async BatchWrite(document: Partial<T>[]): Promise<BatchWriteOutput> {
+	public async InsertMany(document: Partial<T>[]): Promise<BatchWriteOutput> {
 		const now = new Date().toISOString();
 		const values = document.reduce((acc, doc) => {
 			acc.push({
@@ -174,7 +173,7 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 * @return {*}  {Promise<PutItemOutput>}
 	 * @memberof Entity
 	 */
-	public async PutItem(document: Partial<T>): Promise<PutItemOutput> {
+	public async Insert(document: Partial<T>): Promise<PutItemOutput> {
 		return super.put({
 			TableName: this.TableName,
 			Item: {
@@ -194,7 +193,7 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 * @memberof Entity
 	 */
 	public async SoftDelete(key: Partial<T>): Promise<UpdateAttributes<T>> {
-		return this.UpdateByPrimaryKey(key, { is_deleted: true } as Partial<IModel> as Partial<T>);
+		return this.UpdateOne(key, { is_deleted: true } as Partial<IModel> as Partial<T>);
 	}
 
 	/**
@@ -204,7 +203,7 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 * @memberof Entity
 	 */
 	public async SoftRecover(key: Partial<T>): Promise<UpdateAttributes<T>> {
-		return this.UpdateByPrimaryKey(key, { is_deleted: false } as Partial<IModel> as Partial<T>);
+		return this.UpdateOne(key, { is_deleted: false } as Partial<IModel> as Partial<T>);
 	}
 
 	/**

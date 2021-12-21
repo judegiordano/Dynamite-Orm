@@ -51,7 +51,7 @@ import { User } from "./UserEntity";
 import { UserModel } from "./UserModel";
 
 (async () => {
-	const { Attributes } = await User.PutItem({ username: "FooBar", age: 18, user_email: "foo@bar.com" });
+	const { Attributes } = await User.Insert({ username: "FooBar", age: 18, user_email: "foo@bar.com" });
 	const user = new UserModel(Attributes);
 	console.log(user.toJSON());
 })()
@@ -77,7 +77,7 @@ import { UserModel } from "./UserModel";
 import { User } from "./UserEntity";
 
 (async () => {
-	const item = await User.FilterByPrimaryKey({
+	const item = await User.FindOne({
 		id: "98c79a5a-dbc4-4711-9ade-d6c2d6623f33"
 	});
 	console.log(item);
@@ -100,7 +100,7 @@ import { User } from "./UserEntity";
 import { User } from "./UserEntity";
 
 (async () => {
-	const { Items, Count } = await User.FilterByGsi("UsernameIndex", {
+	const { Items, Count } = await User.Find("UsernameIndex", {
 		// Key Condition
 		username: "FooBar"
 	}, {
@@ -187,7 +187,7 @@ import { User } from "./UserEntity";
 import { User } from "./UserEntity";
 
 (async () => {
-	const { Attributes } = await User.UpdateByPrimaryKey({
+	const { Attributes } = await User.UpdateOne({
 		id: "98c79a5a-dbc4-4711-9ade-d6c2d6623f33"
 	}, {
 		age: 19,

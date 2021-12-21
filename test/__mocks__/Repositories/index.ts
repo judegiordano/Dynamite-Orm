@@ -1,6 +1,6 @@
 import { Entity, IModel } from "../../../src";
 
-interface IUser extends IModel {
+export interface IUser extends IModel {
 	username: string,
 	age: number
 }
