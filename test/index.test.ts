@@ -21,18 +21,52 @@ const mock = [
 ];
 
 describe("test dynamite-orm base functionality", () => {
-	it("should create some users", async () => {
+	it("should insert some items", async () => {
 		const { UnprocessedItems } = await User.BatchWrite(mock);
 		assert.isEmpty(UnprocessedItems);
 	});
 	it("should query by username", async () => {
-		const { Count } = await User.FilterByGsi("UsernameIndex", { username: "Foo" });
+		const { Items, Count } = await User.FilterByGsi("UsernameIndex", { username: "Foo" });
 		assert.equal(Count, 2);
+		Items.every(user => assert.equal(user.username, "Foo"));
 	});
 	it("should query by username and age", async () => {
 		const { Items, Count } = await User.FilterByGsi("UsernameIndex", { username: "Foo" }, { age: 25 });
 		assert.equal(Count, 1);
 		assert.equal(Items[0]?.username, "Foo");
 		assert.equal(Items[0]?.age, 25);
+	});
+	it("should soft delete an item", async () => {
+		const { Items } = await User.FilterByGsi("UsernameIndex", { username: "Foo" }, { age: 25 });
+		assert.exists(Items[0]?.id);
+		const { Attributes } = await User.SoftDelete({ id: Items[0]?.id!, created_at: Items[0]?.created_at });
+		assert.isTrue(Attributes.is_deleted);
+	});
+	it("should soft recover an item", async () => {
+		const { Items } = await User.FilterByGsi("UsernameIndex", { username: "Foo" }, { age: 25 });
+		assert.exists(Items[0]?.id);
+		const { Attributes } = await User.SoftRecover({ id: Items[0]?.id!, created_at: Items[0]?.created_at });
+		assert.isFalse(Attributes.is_deleted);
+	});
+	it("should update an item", async () => {
+		const { Items } = await User.FilterByGsi("UsernameIndex", { username: "Foo" }, { age: 25 });
+		const { Attributes } = await User.UpdateByPrimaryKey({
+			id: Items[0]?.id!,
+			created_at: Items[0]?.created_at
+		}, {
+			username: "NewUsername",
+			age: 26
+		});
+		assert.equal(Attributes.username, "NewUsername");
+		assert.equal(Attributes.age, 26);
+	});
+	it("should find an item by primary partition", async () => {
+		const { Items } = await User.FilterByGsi("UsernameIndex", { username: "NewUsername" }, { age: 26 });
+		const { id, created_at } = await User.FilterByPrimaryKey({
+			id: Items[0]?.id!,
+			created_at: Items[0]?.created_at
+		});
+		assert.equal(id, Items[0]?.id);
+		assert.equal(created_at, Items[0]?.created_at);
 	});
 });

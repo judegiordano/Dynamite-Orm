@@ -41,18 +41,28 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 		this.TableName = tableName;
 	}
 
+
 	/**
 	 *
-	 * @param {string} id
+	 * @param {Partial<T>} keyExpression
 	 * @return {*}  {Promise<T>}
 	 * @memberof Entity
 	 */
-	public async FindById(id: string): Promise<T> {
+	public async FilterByPrimaryKey(
+		keyExpression: Partial<T>,
+	): Promise<T> {
+		const conditionKeys = Object.keys(keyExpression);
+		const ExpressionAttributeNames = {
+			...reduceKeyNames(conditionKeys)
+		};
+		const ExpressionAttributeValues = {
+			...reduceKeyValues(keyExpression, conditionKeys)
+		};
 		const { Items } = await super.query({
 			TableName: this.TableName,
-			KeyConditionExpression: "#id = :id",
-			ExpressionAttributeNames: { "#id": "id" },
-			ExpressionAttributeValues: { ":id": id },
+			KeyConditionExpression: mapExpression(conditionKeys),
+			ExpressionAttributeNames,
+			ExpressionAttributeValues,
 			Limit: 1
 		}).promise();
 		if (!Items) throw new Error("no item found");
@@ -102,14 +112,14 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 
 	/**
 	 *
-	 * @param {string} pk
+	 * @param {Partial<T>} Key
 	 * @param {Partial<T>} updateExpression
-	 * @param {("NONE" | "ALL_OLD" | "UPDATED_OLD" | "ALL_NEW" | "UPDATED_NEW")} [ReturnValues="UPDATED_NEW"]
-	 * @return {*}
+	 * @param {UpdateReturnValues} [ReturnValues="UPDATED_NEW"]
+	 * @return {*}  {Promise<UpdateAttributes<T>>}
 	 * @memberof Entity
 	 */
-	public async UpdateById(
-		id: string,
+	public async UpdateByPrimaryKey(
+		Key: Partial<T>,
 		updateExpression: Partial<T>,
 		ReturnValues: UpdateReturnValues = "UPDATED_NEW"
 	): Promise<UpdateAttributes<T>> {
@@ -122,7 +132,7 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 		};
 		const { Attributes } = await super.update({
 			TableName: this.TableName,
-			Key: { id },
+			Key,
 			UpdateExpression,
 			ExpressionAttributeValues,
 			ReturnValues
@@ -179,31 +189,31 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 
 	/**
 	 *
-	 * @param {string} id
+	 * @param {partial<string>} key
 	 * @return {*}  {Promise<UpdateAttributes<T>>}
 	 * @memberof Entity
 	 */
-	public async SoftDelete(id: string): Promise<UpdateAttributes<T>> {
-		return this.UpdateById(id, { is_deleted: true } as Partial<IModel> as Partial<T>);
+	public async SoftDelete(key: Partial<T>): Promise<UpdateAttributes<T>> {
+		return this.UpdateByPrimaryKey(key, { is_deleted: true } as Partial<IModel> as Partial<T>);
 	}
 
 	/**
 	 *
-	 * @param {string} id
+	 * @param {Partial<T>} key
 	 * @return {*}  {Promise<UpdateAttributes<T>>}
 	 * @memberof Entity
 	 */
-	public async SoftRecover(id: string): Promise<UpdateAttributes<T>> {
-		return this.UpdateById(id, { is_deleted: false } as Partial<IModel> as Partial<T>);
+	public async SoftRecover(key: Partial<T>): Promise<UpdateAttributes<T>> {
+		return this.UpdateByPrimaryKey(key, { is_deleted: false } as Partial<IModel> as Partial<T>);
 	}
 
 	/**
 	 *
-	 * @param {string} id
+	 * @param {Partial<T>} key
 	 * @return {*}  {Promise<DeleteItemOutput>}
 	 * @memberof Entity
 	 */
-	public async HardDelete(id: string): Promise<DeleteItemOutput> {
-		return this.delete({ TableName: this.TableName, Key: { id } }).promise();
+	public async HardDelete(Key: Partial<T>): Promise<DeleteItemOutput> {
+		return this.delete({ TableName: this.TableName, Key }).promise();
 	}
 }
