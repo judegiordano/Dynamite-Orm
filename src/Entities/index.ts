@@ -8,7 +8,8 @@ import {
 	FilterResult,
 	DeleteItemOutput,
 	UpdateReturnValues,
-	PutItemOutput
+	PutItemOutput,
+	ScaneResult
 } from "../Types";
 import { uuid, mapExpression, reduceKeyNames, reduceKeyValues, chunk } from "../Helpers";
 
@@ -221,5 +222,29 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 */
 	public async HardDelete(Key: Partial<T>): Promise<DeleteItemOutput> {
 		return this.delete({ TableName: this.TableName, Key }).promise();
+	}
+
+	public async Scan(filterExpression: Partial<T>, {
+		limit,
+		startKey
+	}: {
+		limit?: number,
+		startKey?: Partial<T>
+	}): Promise<ScaneResult<T>> {
+		const keys = Object.keys(filterExpression);
+
+		const { Items, Count, LastEvaluatedKey } = await super.scan({
+			TableName: this.TableName,
+			ExclusiveStartKey: startKey,
+			ExpressionAttributeNames: reduceKeyNames(keys),
+			ExpressionAttributeValues: reduceKeyValues(filterExpression, keys),
+			FilterExpression: mapExpression(keys),
+			Limit: limit
+		}).promise();
+		return {
+			Items: Items as T[] ?? [],
+			Count: Count ?? 0,
+			LastEvaluatedKey: LastEvaluatedKey as Partial<T> ?? null
+		};
 	}
 }

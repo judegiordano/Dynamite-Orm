@@ -15,7 +15,9 @@ describe("test dynamite-orm base functionality", () => {
 	let lastKey: Partial<IUser>;
 
 	it("should insert multiple items", async () => {
+		console.time();
 		const items = await User.InsertMany(mockData);
+		console.timeEnd();
 		items.every(({ UnprocessedItems }) => assert.isEmpty(UnprocessedItems));
 	});
 
@@ -88,5 +90,18 @@ describe("test dynamite-orm base functionality", () => {
 		});
 		assert.equal(id, Items[0]?.id);
 		assert.equal(created_at, Items[0]?.created_at);
+	});
+
+	it("should scan items", async () => {
+		const scan1 = await User.Scan({ is_deleted: false }, { limit: 20 });
+		assert.equal(scan1.Count, 20);
+		assert.equal(scan1.Items.length, 20);
+		assert.exists(scan1.Items);
+		assert.exists(scan1.LastEvaluatedKey);
+		const scan2 = await User.Scan({ is_deleted: false }, { limit: 20, startKey: scan1.LastEvaluatedKey });
+		assert.equal(scan2.Count, 20);
+		assert.equal(scan2.Items.length, 20);
+		assert.exists(scan2.Items);
+		assert.exists(scan2.LastEvaluatedKey);
 	});
 });

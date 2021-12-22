@@ -22,6 +22,7 @@ export interface IBatchWriteInput<T extends IModel> {
 
 export type UpdateAttributes<T> = { Attributes: Partial<T> }
 export type FilterResult<T> = { Items: T[], Count: number, LastEvaluatedKey: Partial<T> }
+export type ScaneResult<T> = { Items: T[], Count: number, LastEvaluatedKey: Partial<T> }
 export type BatchWriteOutput = PromiseResult<DocumentClient.BatchWriteItemOutput, AWSError>
 export type PutItemOutput = PromiseResult<DocumentClient.PutItemOutput, AWSError>
 export type DeleteItemOutput = PromiseResult<DocumentClient.DeleteItemOutput, AWSError>
