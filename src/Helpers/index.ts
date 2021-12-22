@@ -71,3 +71,17 @@ export function reduceKeyNames(keys: string[]): { [key: string]: string } {
 export function mapExpression(keys: string[]): string {
 	return keys.map(a => `#${a} = :${a}`).join(" and ");
 }
+
+export function chunk<T>(array: T[], chunkSize: number): T[][] {
+	return array.reduce((acc, item, index) => {
+		const chunkIndex = Math.floor(index / chunkSize);
+
+		if (!acc[chunkIndex]) {
+			acc[chunkIndex] = [];
+		}
+
+		acc[chunkIndex].push(item);
+
+		return acc;
+	}, [] as any);
+}

@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 import { assert } from "chai";
-import { chunk } from "lodash";
 import { Seed, Drop, User, IUser, mockData } from "./__mocks__";
 
 before(async () => {
@@ -15,14 +14,9 @@ describe("test dynamite-orm base functionality", () => {
 
 	let lastKey: Partial<IUser>;
 
-	it("should insert some items", async () => {
-		const items = chunk(mockData, 20);
-		const requests = items.reduce((acc, chunk) => {
-			acc.push(User.InsertMany(chunk));
-			return acc;
-		}, [] as Promise<any>[]);
-		const done = await Promise.all(requests);
-		done.every(({ UnprocessedItems }) => assert.isEmpty(UnprocessedItems));
+	it("should insert multiple items", async () => {
+		const items = await User.InsertMany(mockData);
+		items.every(({ UnprocessedItems }) => assert.isEmpty(UnprocessedItems));
 	});
 
 	it("should query by username", async () => {

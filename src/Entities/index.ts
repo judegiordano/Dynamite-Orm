@@ -10,7 +10,7 @@ import {
 	UpdateReturnValues,
 	PutItemOutput
 } from "../Types";
-import { uuid, mapExpression, reduceKeyNames, reduceKeyValues } from "../Helpers";
+import { uuid, mapExpression, reduceKeyNames, reduceKeyValues, chunk } from "../Helpers";
 
 /**
  *
@@ -146,25 +146,32 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 * @return {*}  {Promise<BatchWriteOutput>}
 	 * @memberof Entity
 	 * ---
-	 * insert up to 25 documents
+	 * insert multiple documents
 	 */
-	public async InsertMany(document: Partial<T>[]): Promise<BatchWriteOutput> {
+	public async InsertMany(document: Partial<T>[]): Promise<BatchWriteOutput[]> {
+		const chunks = chunk(document, 25);
 		const now = new Date().toISOString();
-		const values = document.reduce((acc, doc) => {
-			acc.push({
-				PutRequest: {
-					Item: {
-						id: uuid(),
-						is_deleted: false,
-						created_at: now,
-						updated_at: now,
-						...doc
+		const requests = chunks.reduce((acc, chunk) => {
+			const values = chunk.reduce((acc, doc) => {
+				acc.push({
+					PutRequest: {
+						Item: {
+							id: uuid(),
+							is_deleted: false,
+							created_at: now,
+							updated_at: now,
+							...doc
+						}
 					}
-				}
-			});
+				});
+				return acc;
+			}, [] as IBatchWriteInput<T>[]);
+			const insert = super.batchWrite({ RequestItems: { [this.TableName]: values } }).promise();
+			acc.push(insert);
 			return acc;
-		}, [] as IBatchWriteInput<T>[]);
-		return super.batchWrite({ RequestItems: { [this.TableName]: values } }).promise();
+		}, [] as Promise<BatchWriteOutput>[]);
+
+		return Promise.all(requests);
 	}
 
 	/**
