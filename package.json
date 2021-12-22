@@ -1,6 +1,6 @@
 {
 	"name": "dynamite-orm",
-	"version": "1.5.0",
+	"version": "1.6.0",
 	"description": "a ts orm for dynamodb",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
@@ -13,7 +13,7 @@
 		"lint": "eslint --fix --ext .ts .",
 		"clean": "npx rimraf ./yarn.lock && npx rimraf ./lib && npx rimraf ./**/node_modules",
 		"build": "tsc",
-		"test": "mocha --exit --bail --slow 2000 --timeout 90000",
+		"test": "mocha",
 		"pack:light": "yarn build && npm pack --dry-run",
 		"pack:release": "yarn build && npm pack",
 		"release": "yarn build && npm publish"

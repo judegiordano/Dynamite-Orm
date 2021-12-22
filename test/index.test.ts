@@ -15,9 +15,7 @@ describe("test dynamite-orm base functionality", () => {
 	let lastKey: Partial<IUser>;
 
 	it("should insert multiple items", async () => {
-		console.time();
 		const items = await User.InsertMany(mockData);
-		console.timeEnd();
 		items.every(({ UnprocessedItems }) => assert.isEmpty(UnprocessedItems));
 	});
 
