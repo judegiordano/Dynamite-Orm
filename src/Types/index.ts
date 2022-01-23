@@ -24,6 +24,9 @@ export type UpdateAttributes<T> = { Attributes: Partial<T> }
 export type FilterResult<T> = { Items: T[], Count: number, LastEvaluatedKey: Partial<T> }
 export type ScaneResult<T> = { Items: T[], Count: number, LastEvaluatedKey: Partial<T> }
 export type BatchWriteOutput = PromiseResult<DocumentClient.BatchWriteItemOutput, AWSError>
-export type PutItemOutput = PromiseResult<DocumentClient.PutItemOutput, AWSError>
+export type PutItemOutput = {
+	id: string
+	response: PromiseResult<DocumentClient.PutItemOutput, AWSError>
+}
 export type DeleteItemOutput = PromiseResult<DocumentClient.DeleteItemOutput, AWSError>
 export type UpdateReturnValues = "NONE" | "ALL_OLD" | "UPDATED_OLD" | "ALL_NEW" | "UPDATED_NEW"

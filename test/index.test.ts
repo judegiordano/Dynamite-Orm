@@ -90,6 +90,12 @@ describe("test dynamite-orm base functionality", () => {
 		assert.equal(created_at, Items[0]?.created_at);
 	});
 
+	it("should insert one item and return values", async () => {
+		const item = await User.Insert({ age: 26, username: "SomeUniqueName" });
+		const { Items } = await User.Find("UsernameIndex", { username: "SomeUniqueName" });
+		assert.deepEqual(Items[0], item);
+	});
+
 	it("should scan items", async () => {
 		const scan1 = await User.Scan({ is_deleted: false }, { limit: 20 });
 		assert.equal(scan1.Count, 20);

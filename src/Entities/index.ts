@@ -8,7 +8,6 @@ import {
 	FilterResult,
 	DeleteItemOutput,
 	UpdateReturnValues,
-	PutItemOutput,
 	ScaneResult
 } from "../Types";
 import { uuid, mapExpression, reduceKeyNames, reduceKeyValues, chunk } from "../Helpers";
@@ -178,20 +177,24 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	/**
 	 *
 	 * @param {Partial<T>} document
-	 * @return {*}  {Promise<PutItemOutput>}
+	 * @return {*}  {Promise<T>}
 	 * @memberof Entity
+	 * ---
+	 * insert one document
 	 */
-	public async Insert(document: Partial<T>): Promise<PutItemOutput> {
-		return super.put({
+	public async Insert(document: Partial<T>): Promise<T> {
+		const Item = {
+			id: uuid(),
+			is_deleted: false,
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
+			...document
+		};
+		await super.put({
 			TableName: this.TableName,
-			Item: {
-				id: uuid(),
-				is_deleted: false,
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString(),
-				...document
-			}
+			Item
 		}).promise();
+		return Item as unknown as T;
 	}
 
 	/**
