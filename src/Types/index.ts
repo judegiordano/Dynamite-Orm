@@ -14,6 +14,18 @@ export interface IModel {
 	updated_at: string;
 }
 
+/**
+ *
+ * `string`
+ *
+ * ---
+ *
+ * a pseudo reference to anmother document
+ *
+ * essentially a reminder to use the referenced document id
+ */
+export type Ref<T extends IModel> = T["id"]
+
 export interface IBatchWriteInput<T extends IModel> {
 	PutRequest: {
 		Item: Partial<T>
