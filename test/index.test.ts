@@ -25,6 +25,12 @@ describe("test dynamite-orm base functionality", () => {
 		Items.every(user => assert.equal(user.username, "Foo"));
 	});
 
+	it("should query by username", async () => {
+		const { Items, Count } = await User.Find("UsernameIndex", { username: "Foo" });
+		assert.equal(Count, 2);
+		Items.every(user => assert.equal(user.username, "Foo"));
+	});
+
 	it("should paginate results", async () => {
 		const { Items, Count, LastEvaluatedKey } = await User.Find("UsernameIndex", {
 			username: "Duplicate"
@@ -107,5 +113,18 @@ describe("test dynamite-orm base functionality", () => {
 		assert.equal(scan2.Items.length, 20);
 		assert.exists(scan2.Items);
 		assert.exists(scan2.LastEvaluatedKey);
+	});
+
+	it("should ensure each unique id exists once", async () => {
+		const { Items, Count } = await User.Scan({ is_deleted: false }, {});
+		const ids = Items.reduce((acc: string[], { id }) => {
+			acc.push(id);
+			return acc;
+		}, []);
+		assert.equal(Count, ids.length);
+		ids.every((id) => {
+			const found = ids.filter(i => i === id);
+			assert.equal(found.length, 1);
+		});
 	});
 });

@@ -1,6 +1,8 @@
-import { v4 } from "uuid";
+import { customAlphabet } from "nanoid";
 
-export const uuid = () => v4();
+const nanoid = customAlphabet("1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ", 20);
+
+export const uuid = () => nanoid();
 
 /**
  *

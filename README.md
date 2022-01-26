@@ -57,18 +57,14 @@ import { UserModel } from "./UserModel";
 })()
 ```
 ```ts
-// the last 3 properties are always present on the document, but
-// are stripped out of the JSON once the Attributes are
-// constructed into you model class.
-// this is done useing class-transformer's @exclude() decorator
 {
 	id: "98c79a5a-dbc4-4711-9ade-d6c2d6623f33",
 	username: "FooBar",
 	age: 18,
 	user_email: "foo@bar.com",
-	// is_deleted: false,
-	// created_at: "2021-12-18T20:42:49.449Z",
-	// updated_at: "2021-12-18T20:42:49.449Z"
+	is_deleted: false,
+	created_at: "2021-12-18T20:42:49.449Z",
+	updated_at: "2021-12-18T20:42:49.449Z"
 }
 ```
 ---
