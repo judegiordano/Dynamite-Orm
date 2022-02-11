@@ -5,9 +5,9 @@
 ## Usage
 ```ts
 // UserModel.ts
-import { BaseModel, IModelBase } from "dynamite-orm";
+import { BaseModel, IModel } from "dynamite-orm";
 
-export interface IUser extends IModelBase {
+export interface IUser extends IModel {
 	username: string;
 	age: number;
 	user_email: string;

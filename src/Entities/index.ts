@@ -42,10 +42,13 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 		this.TableName = tableName;
 	}
 
-
 	/**
 	 *
+	 *
 	 * @param {Partial<T>} Key
+	 * @param {({
+	 * 			select?: [keyof T] | string[]
+	 * 		})} [options]
 	 * @return {*}  {Promise<T>}
 	 * @memberof Entity
 	 * ---
@@ -55,17 +58,30 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 	 */
 	public async FindOne(
 		Key: Partial<T>,
+		options?: {
+			select?: [keyof T] | string[]
+		}
 	): Promise<T> {
-		const { Item } = await super.get({ TableName: this.TableName, Key }).promise();
+		const { Item } = await super.get({
+			TableName: this.TableName,
+			Key,
+			ProjectionExpression: options?.select?.join(", "),
+		}).promise();
 		return Item as T;
 	}
 
 	/**
 	 *
+	 *
 	 * @param {IndexOptions} IndexName
 	 * @param {Partial<T>} keyExpression
 	 * @param {Partial<T>} [filterExpression={}]
-	 * @param {({ order?: "ASC" | "DESC", limit?: number })} [options]
+	 * @param {({
+	 * 			order?: "ASC" | "DESC",
+	 * 			select?: [keyof T] | string[],
+	 * 			limit?: number,
+	 * 			offsetKey?: Partial<T>
+	 * 		})} [options]
 	 * @return {*}  {Promise<FilterResult<T>>}
 	 * @memberof Entity
 	 * ---
@@ -75,7 +91,12 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 		IndexName: IndexOptions,
 		keyExpression: Partial<T>,
 		filterExpression: Partial<T> = {},
-		options?: { order?: "ASC" | "DESC", limit?: number, offsetKey?: Partial<T> }
+		options?: {
+			order?: "ASC" | "DESC",
+			select?: [keyof T] | string[],
+			limit?: number,
+			offsetKey?: Partial<T>
+		}
 	): Promise<FilterResult<T>> {
 		const conditionKeys = Object.keys(keyExpression);
 		const filterKeys = Object.keys(filterExpression);
@@ -96,6 +117,7 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 			ExpressionAttributeValues,
 			ExclusiveStartKey: options?.offsetKey,
 			ScanIndexForward: options?.order === "ASC",
+			ProjectionExpression: options?.select?.join(", "),
 			Limit: options?.limit
 		}).promise();
 		return {
@@ -227,13 +249,17 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 		return this.delete({ TableName: this.TableName, Key }).promise();
 	}
 
-	public async Scan(filterExpression: Partial<T>, {
-		limit,
-		startKey
-	}: {
-		limit?: number,
-		startKey?: Partial<T>
-	}): Promise<ScaneResult<T>> {
+	public async Scan(
+		filterExpression: Partial<T>,
+		{
+			limit,
+			select,
+			startKey
+		}: {
+			limit?: number,
+			select?: [keyof T] | string[],
+			startKey?: Partial<T>
+		}): Promise<ScaneResult<T>> {
 		const keys = Object.keys(filterExpression);
 
 		const { Items, Count, LastEvaluatedKey } = await super.scan({
@@ -241,9 +267,11 @@ export abstract class Entity<IndexOptions extends string, T extends IModel> exte
 			ExclusiveStartKey: startKey,
 			ExpressionAttributeNames: reduceKeyNames(keys),
 			ExpressionAttributeValues: reduceKeyValues(filterExpression, keys),
+			ProjectionExpression: select?.join(", "),
 			FilterExpression: mapExpression(keys),
 			Limit: limit
 		}).promise();
+
 		return {
 			Items: Items as T[] ?? [],
 			Count: Count ?? 0,

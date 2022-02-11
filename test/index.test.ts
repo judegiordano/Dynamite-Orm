@@ -59,6 +59,20 @@ describe("test dynamite-orm base functionality", () => {
 		assert.equal(Items[0]?.age, 25);
 	});
 
+	it("should return selected projection expression", async () => {
+		const { Items } = await User.Find("UsernameIndex", {
+			username: "Foo"
+		}, {
+			age: 25
+		}, {
+			select: ["username"]
+		});
+		assert.exists(Items[0]?.username);
+		assert.notExists(Items[0]?.age);
+		assert.notExists(Items[0]?.created_at);
+		assert.notExists(Items[0]?.id);
+	});
+
 	it("should soft delete an item", async () => {
 		const { Items } = await User.Find("UsernameIndex", { username: "Foo" }, { age: 25 });
 		assert.exists(Items[0]?.id);
@@ -94,6 +108,20 @@ describe("test dynamite-orm base functionality", () => {
 		});
 		assert.equal(id, Items[0]?.id);
 		assert.equal(created_at, Items[0]?.created_at);
+	});
+
+	it("should find an item by primary partition and select attributes", async () => {
+		const { Items } = await User.Find("UsernameIndex", { username: "NewUsername" }, { age: 26 });
+		const item = await User.FindOne({
+			id: Items[0]?.id!,
+			created_at: Items[0]?.created_at
+		}, {
+			select: ["username"]
+		});
+		assert.exists(item.username);
+		assert.notExists(item.age);
+		assert.notExists(item.created_at);
+		assert.notExists(item.id);
 	});
 
 	it("should insert one item and return values", async () => {
